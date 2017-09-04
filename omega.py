@@ -1,0 +1,256 @@
+
+import pygame
+import random
+import time
+from background import Background
+from enemy import Enemy
+from player import Player
+from bullet import Bullet
+from hud import Hud
+from score import Score
+
+# Set the height and width of the screen
+screen_width = 700
+screen_height = 400
+screen = pygame.display.set_mode([screen_width, screen_height])
+BACKGROUND = pygame.image.load('assets/background.png')
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+# init pygame
+pygame.init()
+# by default hide mouse
+pygame.mouse.set_visible(False)
+pygame.display.set_caption('OMEGA!')
+clock = pygame.time.Clock()
+# global obj to track high scores
+scores = Score()
+
+# creates 'text objects' for displaying messages
+# from a tutorial needs re-write to better suit my needs
+def text_objects(text, font, color):
+    textSurface = font.render(text, True, color)
+    return textSurface, textSurface.get_rect()
+
+# uses text objects to display messages on screen
+# same here, ok for now...
+def message_display(text, color):
+    large_text = pygame.font.Font('freesansbold.ttf',30)
+    # create text 'objects'
+    Text_surf, Text_rect = text_objects(text, large_text, color)
+    Text_rect.center = ((screen_width/2),(screen_height/2))
+    # blit the text object to the screen
+    screen.blit(Text_surf, Text_rect)
+    # update the screen to show new text
+    pygame.display.update()
+    # pause for a moment to allow player to see message
+    time.sleep(3)
+
+
+def button(msg, x, y, width, height, colors, action=None):
+    """ function to easily create functional buttons """
+
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+
+    if x + width > mouse[0] > x and y + height > mouse[1] > y:
+        pygame.draw.rect(screen, colors[0], (x, y, width, height))
+        if click[0] == 1 and action != None:
+            action()
+
+    else:
+        pygame.draw.rect(screen, colors[1], (x, y, width, height))
+
+    smallText = pygame.font.Font('freesansbold.ttf',20)
+    textSurf, textRect = text_objects(msg, smallText, colors[2])
+    textRect.center = ((x + (width/2)),(y + (height / 2)))
+
+    screen.blit(textSurf, textRect)
+
+    pygame.display.update()
+
+
+def start_loop():
+    selected = False
+
+    top_score = Hud(10, 350, 200, 40, "TOP SCORE")
+
+    while not selected:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                selected = True
+
+        top_score.prop = scores.top_score
+        clock.tick(20)
+        pygame.mouse.set_visible(True)
+        screen.fill((210,208,224))
+        large_text = pygame.font.Font('freesansbold.ttf',80)
+        Text_surf, Text_rect = text_objects("OMEGA!", large_text, (26,20,35))
+        Text_rect.center = ((screen_width/2),(screen_height/2.75))
+        screen.blit(Text_surf, Text_rect)
+
+        top_score.print_prop(screen)
+
+        button('PLAY', ((screen_width/2) - 50), 240, 100, 40,
+              ((37,31,71), (108,100,153), (210,208,224)), game_loop)
+
+
+def game_loop():
+    background = Background('assets/background.png', [0,0])
+
+    pygame.mouse.set_visible(False)
+
+    #  list of every sprite
+    all_sprites_list = pygame.sprite.Group()
+    # list of each enemy in the game
+    enemy_list = pygame.sprite.Group()
+    # list of each bullet - rename projectile?
+    bullet_list = pygame.sprite.Group()
+
+    # --- Create the sprites
+    num_of_enemies = 30
+
+    # create all enemies
+    for i in range(num_of_enemies):
+        enemy = Enemy()
+
+        # set a random location for the enemy
+        # *maybe* in the future have them all start off screen
+        enemy.rect.x = random.randrange(screen_width)
+        enemy.rect.y = random.randrange(300)
+
+        # Add the enemy to the appropriate lists of sprites
+        enemy_list.add(enemy)
+        all_sprites_list.add(enemy)
+
+    # create a player
+    player = Player()
+    all_sprites_list.add(player)
+
+    score = 0
+    shots_fired = 0
+    player.rect.y = 330
+    ammo = int(num_of_enemies * 1.3)
+    multiplier = 1
+    streak = 0
+    misses = 0
+
+    hud_items = pygame.sprite.Group()
+
+    hud_score = Hud(570, 350, 120, 40, 'SCORE')
+    hud_ammo = Hud(570, 300, 120, 40, 'AMMO')
+    hud_multiplier = Hud(510, 350, 50, 40, '', 'x', True)
+    hud_items.add(hud_score)
+    hud_items.add(hud_ammo)
+
+
+
+    # -------- Main Program Loop -----------
+    game_over = False
+    while not game_over:
+        multiplier = int(streak/2) or 1
+        total_score = score * 100 or 0
+        hud_ammo.prop = ammo
+        hud_score.prop = total_score
+        hud_multiplier.prop = multiplier
+
+        # --- Event Processing
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_over = True
+                pygame.quit()
+                quit()
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # fire a bullet if the user clicks any mouse button
+                if ammo > 0:
+                    bullet = Bullet()
+                    # set the bullet so it is where the player is
+                    bullet.rect.x = player.rect.x + 30
+                    bullet.rect.y = player.rect.y + 10
+                    # add the bullet to the lists
+                    all_sprites_list.add(bullet)
+                    bullet_list.add(bullet)
+                    shots_fired += 1
+                    ammo -= 1
+
+                else:
+                    print('you loose', total_score)
+                    message_display('YOU LOOSE OUT OF AMMO!!!'
+                        .format(total_score), WHITE)
+                    game_over = True
+
+        # --- Game logic
+
+        # call the update method on all the sprites
+        all_sprites_list.update()
+
+        # calculate mechanics for each bullet
+        for bullet in bullet_list:
+
+            # see if bullet hit a enemy
+            enemy_hit_list = pygame.sprite.spritecollide(
+                bullet, enemy_list, False)
+
+            # for each enemy hit, remove the bullet and add to the score
+            for enemy in enemy_hit_list:
+
+                if not enemy.hit:
+                    bullet_list.remove(bullet)
+                    all_sprites_list.remove(bullet)
+                    score += (1 * multiplier)
+                    streak += 1
+                    enemy.explode()
+
+             # remove the bullet if it flies up off the screen
+            if bullet.rect.y < -10:
+                bullet_list.remove(bullet)
+                all_sprites_list.remove(bullet)
+                streak = 0
+                misses += 1
+
+
+        # checking enemy list is empty ensures that the last explode() has completed ;)
+        if not enemy_list:
+            print('winner',shots_fired, score, total_score)
+
+            if total_score > scores.top_score:
+                scores.update_ts(total_score)
+
+            if shots_fired <= num_of_enemies and not misses:
+                message_display('PERFECT!! YOU WIN!! score: {}'
+                    .format(str(total_score)), WHITE)
+            elif ammo == 0:
+                message_display('CLOSE ONE, YOU WIN!! score: {}'
+                    .format(str(total_score)), WHITE)
+            else:
+                message_display('YOU WIN!!! total score: {}'
+                    .format(str(total_score)), WHITE)
+            game_over = True
+
+        # clear the screen
+        screen.fill(WHITE)
+        # then background
+        screen.blit(background.image, background.rect)
+
+        # draw all the spites
+        # draw hud items on top of background
+        hud_ammo.print_prop(screen)
+        hud_score.print_prop(screen)
+        hud_multiplier.print_prop(screen)
+        # followed by enemies
+        all_sprites_list.draw(screen)
+        # and finally player on top
+        player.draw(screen)
+
+        # update the screen
+        pygame.display.flip()
+
+        clock.tick(60)
+
+if __name__ == '__main__':
+    start_loop()
+
+pygame.quit()
+quit()
