@@ -41,12 +41,3 @@ class Hud(pygame.sprite.Sprite):
             self.image = self.HUD_ITEM.convert_alpha()
             self.image.blit(self.text, self.text_rect)
             dest.blit(self.image, self.rect)
-
-        # else:
-        #     self.image.fill((self.HUD_ITEM))
-        #     self.image.blit(self.text, self.text_rect)
-
-    # def update(self):
-    #     """ update the information displayed in the hud """
-
-    #     self.print_prop()

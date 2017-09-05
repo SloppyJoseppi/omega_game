@@ -8,6 +8,8 @@ from player import Player
 from bullet import Bullet
 from hud import Hud
 from score import Score
+from wobble import Wobble_shot
+# from asteroid import Asteroid
 
 # Set the height and width of the screen
 screen_width = 700
@@ -28,20 +30,20 @@ clock = pygame.time.Clock()
 scores = Score()
 
 # creates 'text objects' for displaying messages
-# from a tutorial needs re-write to better suit my needs
+# handy functions from a tutorial needs re-write to better suit my needs
 def text_objects(text, font, color):
-    textSurface = font.render(text, True, color)
-    return textSurface, textSurface.get_rect()
+    text_surf = font.render(text, True, color)
+    return text_surf, text_surf.get_rect()
 
 # uses text objects to display messages on screen
 # same here, ok for now...
 def message_display(text, color):
     large_text = pygame.font.Font('freesansbold.ttf',30)
     # create text 'objects'
-    Text_surf, Text_rect = text_objects(text, large_text, color)
-    Text_rect.center = ((screen_width/2),(screen_height/2))
+    text_surf, text_rect = text_objects(text, large_text, color)
+    text_rect.center = ((screen_width/2),(screen_height/2))
     # blit the text object to the screen
-    screen.blit(Text_surf, Text_rect)
+    screen.blit(text_surf, text_rect)
     # update the screen to show new text
     pygame.display.update()
     # pause for a moment to allow player to see message
@@ -62,11 +64,11 @@ def button(msg, x, y, width, height, colors, action=None):
     else:
         pygame.draw.rect(screen, colors[1], (x, y, width, height))
 
-    smallText = pygame.font.Font('freesansbold.ttf',20)
-    textSurf, textRect = text_objects(msg, smallText, colors[2])
-    textRect.center = ((x + (width/2)),(y + (height / 2)))
+    small_text = pygame.font.Font('freesansbold.ttf',20)
+    text_surf, text_rect = text_objects(msg, small_text, colors[2])
+    text_rect.center = ((x + (width/2)),(y + (height / 2)))
 
-    screen.blit(textSurf, textRect)
+    screen.blit(text_surf, text_rect)
 
     pygame.display.update()
 
@@ -86,9 +88,9 @@ def start_loop():
         pygame.mouse.set_visible(True)
         screen.fill((210,208,224))
         large_text = pygame.font.Font('freesansbold.ttf',80)
-        Text_surf, Text_rect = text_objects("OMEGA!", large_text, (26,20,35))
-        Text_rect.center = ((screen_width/2),(screen_height/2.75))
-        screen.blit(Text_surf, Text_rect)
+        text_surf, text_rect = text_objects("OMEGA!", large_text, (26,20,35))
+        text_rect.center = ((screen_width/2),(screen_height/2.75))
+        screen.blit(text_surf, text_rect)
 
         top_score.print_prop(screen)
 
@@ -144,6 +146,8 @@ def game_loop():
     hud_items.add(hud_score)
     hud_items.add(hud_ammo)
 
+    # a = Asteroid()
+
 
 
     # -------- Main Program Loop -----------
@@ -157,6 +161,10 @@ def game_loop():
 
         # --- Event Processing
         for event in pygame.event.get():
+            player_pos = (player.rect.x + 30, player.rect.y + 10)
+
+            # print(event)
+
             if event.type == pygame.QUIT:
                 game_over = True
                 pygame.quit()
@@ -164,21 +172,32 @@ def game_loop():
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # fire a bullet if the user clicks any mouse button
-                if ammo > 0:
-                    bullet = Bullet()
-                    # set the bullet so it is where the player is
-                    bullet.rect.x = player.rect.x + 30
-                    bullet.rect.y = player.rect.y + 10
-                    # add the bullet to the lists
+                can_fire = ammo > 0
+
+                if can_fire and event.button == 1:
+                    bullet = Bullet(player_pos)
+                    # add the bullet to lists
                     all_sprites_list.add(bullet)
                     bullet_list.add(bullet)
                     shots_fired += 1
                     ammo -= 1
 
-                else:
-                    print('you loose', total_score)
-                    message_display('YOU LOOSE OUT OF AMMO!!!'
-                        .format(total_score), WHITE)
+                elif can_fire and event.button == 3:
+
+                    bullet = Wobble_shot(player_pos)
+                    # add the bullet to lists
+                    all_sprites_list.add(bullet)
+                    bullet_list.add(bullet)
+                    shots_fired += 1
+                    ammo -= 1
+
+                elif event.button == 2:
+                    ammo += 30
+
+                elif not can_fire:
+                    print('you loose')
+                    message_display('YOU LOOSE OUT OF AMMO!!!', WHITE)
+
                     game_over = True
 
         # --- Game logic
@@ -209,7 +228,6 @@ def game_loop():
                 all_sprites_list.remove(bullet)
                 streak = 0
                 misses += 1
-
 
         # checking enemy list is empty ensures that the last explode() has completed ;)
         if not enemy_list:
