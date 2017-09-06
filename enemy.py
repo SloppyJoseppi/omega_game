@@ -24,7 +24,6 @@ class Enemy(pygame.sprite.Sprite):
         self.hit = True
         self.time = pygame.time.get_ticks()
         self.image = DESTRO_ENEMY
-        pygame.transform.flip(self.image, True, False)
 
     def update(self):
         """ update movement and state of enemy"""
