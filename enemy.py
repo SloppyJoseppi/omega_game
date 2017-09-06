@@ -5,7 +5,7 @@ ENEMY = pygame.image.load('assets/enemy.png')
 DESTRO_ENEMY = pygame.image.load('assets/destro_enemy.png')
 
 class Enemy(pygame.sprite.Sprite):
-    """ represents the enemy. """
+    """ represents the enemy """
 
     def __init__(self):
         super().__init__()
