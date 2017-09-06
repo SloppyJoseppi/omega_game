@@ -16,7 +16,8 @@ from wobble import Wobble_shot
 screen_width = 700
 screen_height = 400
 screen = pygame.display.set_mode([screen_width, screen_height])
-BACKGROUND = pygame.image.load('assets/background.png')
+BACKGROUND = 'assets/background.png'
+START_BG = 'assets/start_bg.png'
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -76,7 +77,7 @@ def button(msg, x, y, width, height, colors, action=None):
 
 def start_loop():
     selected = False
-
+    background = Background(START_BG, [0, 0])
     top_score = Hud(10, 350, 200, 40, "TOP SCORE")
 
     while not selected:
@@ -87,9 +88,10 @@ def start_loop():
         top_score.prop = scores.top_score
         clock.tick(20)
         pygame.mouse.set_visible(True)
-        screen.fill((210,208,224))
+        screen.blit(background.image, background.rect)
+
         large_text = pygame.font.Font('freesansbold.ttf',80)
-        text_surf, text_rect = text_objects("OMEGA!", large_text, (26,20,35))
+        text_surf, text_rect = text_objects("OMEGA!", large_text, (210,208,224))
         text_rect.center = ((screen_width/2),(screen_height/2.75))
         screen.blit(text_surf, text_rect)
 
@@ -100,7 +102,7 @@ def start_loop():
 
 
 def game_loop():
-    background = Background('assets/background.png', [0,0])
+    background = Background(BACKGROUND, [0,0])
 
     pygame.mouse.set_visible(False)
 
