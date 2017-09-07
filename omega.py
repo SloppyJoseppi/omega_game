@@ -9,7 +9,7 @@ from bullet import Bullet
 from hud import Hud
 from score import Score
 from wobble import Wobble_shot
-# from asteroid import Asteroid
+from asteroid import Asteroid
 
 
 # Set the height and width of the screen
@@ -113,6 +113,8 @@ def game_loop():
     # list of each bullet - rename projectile?
     bullet_list = pygame.sprite.Group()
 
+    asteroid_list = pygame.sprite.Group()
+
     # --- Create the sprites
     num_of_enemies = 30
 
@@ -136,7 +138,7 @@ def game_loop():
     score = 0
     shots_fired = 0
     player.rect.y = 330
-    ammo = int(num_of_enemies * 1.3)
+    ammo = int(num_of_enemies * 10)
     multiplier = 1
     streak = 0
     misses = 0
@@ -148,6 +150,16 @@ def game_loop():
     hud_multiplier = Hud(510, 350, 50, 40, '', 'x', True)
     hud_items.add(hud_score)
     hud_items.add(hud_ammo)
+
+    asteroid = Asteroid((40, 40), 20, 350, -40, 4)
+    asteroid2 = Asteroid((40, 40), 35, 250, -40)
+    asteroid3 = Asteroid((40, 40), 35, 100, -40, 1)
+    all_sprites_list.add(asteroid)
+    all_sprites_list.add(asteroid2)
+    all_sprites_list.add(asteroid3)
+    asteroid_list.add(asteroid)
+    asteroid_list.add(asteroid2)
+    asteroid_list.add(asteroid3)
 
     # a = Asteroid()
 
@@ -174,7 +186,6 @@ def game_loop():
                 quit()
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                # fire a bullet if the user clicks any mouse button
                 can_fire = ammo > 0
 
                 if can_fire and event.button == 1:
@@ -208,12 +219,27 @@ def game_loop():
         # call the update method on all the sprites
         all_sprites_list.update()
 
+        player_hit_list = pygame.sprite.spritecollide(
+            player, asteroid_list, False)
+
+        if player_hit_list:
+            message_display('YOU LOOSE HIT BY ASTEROID!!!', WHITE)
+            game_over = True
+
         # calculate mechanics for each bullet
         for bullet in bullet_list:
 
             # see if bullet hit a enemy
             enemy_hit_list = pygame.sprite.spritecollide(
                 bullet, enemy_list, False)
+
+            asteroid_hit_list = pygame.sprite.spritecollide(
+                bullet, asteroid_list, False)
+
+            for asteroid in asteroid_hit_list:
+                asteroid.hp -= 1
+                bullet_list.remove(bullet)
+                all_sprites_list.remove(bullet)
 
             # for each enemy hit, remove the bullet and add to the score
             for enemy in enemy_hit_list:
