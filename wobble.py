@@ -11,7 +11,7 @@ class Wobble_shot(Bullet, pygame.sprite.Sprite):
 
         self.image = WOBBLE.convert_alpha()
         self.wobble = 'right'
-        self.speed = 3
+        self.speed = 2
         self.x_origin = pos[0]
 
     # def explode(self):
@@ -25,7 +25,7 @@ class Wobble_shot(Bullet, pygame.sprite.Sprite):
                 self.image = pygame.transform.scale(WOBBLE.convert_alpha(), (growth, growth))
 
             elif growth >= cap:
-                self.rect.height, self.rect.width = 15, cap - 15
+                self.rect.height, self.rect.width = 15, 15
 
     def wobble_animation(self):
         delta = 10
