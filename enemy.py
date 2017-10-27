@@ -26,7 +26,7 @@ class Enemy(pygame.sprite.Sprite):
         self.image = DESTRO_ENEMY
 
     def update(self):
-        """ update movement and state of enemy"""
+        """ update movement and state of enemy """
 
         current_ticks = pygame.time.get_ticks()
 

@@ -6,6 +6,7 @@ ASTEROID = 'assets/asteroid.png'
 
 class Asteroid(pygame.sprite.Sprite):
     """ represents the asteroids """
+
     def __init__(self, size, hp, x, y, speed=2):
         super().__init__()
 
@@ -22,8 +23,6 @@ class Asteroid(pygame.sprite.Sprite):
 
     # def explode(self):
 
-
-
     def update(self):
         """ update the player's position to the mouse x position """
 
@@ -31,7 +30,7 @@ class Asteroid(pygame.sprite.Sprite):
 
         if self.rect.y > 460:
             self.rect.y = -60
-            self.rect.x = random.randint(0, 700)
+            self.rect.x = random.randint(0, 680)
 
         # current_ticks = pygame.time.get_ticks()
 

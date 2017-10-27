@@ -17,7 +17,6 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.centery = pos[1]
         self.speed = 5
 
-
     def update(self):
         """ move the bullet """
 

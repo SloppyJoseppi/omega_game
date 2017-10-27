@@ -3,7 +3,6 @@ import pygame
 PLAYER = pygame.image.load('assets/ship.png')
 
 class Player(pygame.sprite.Sprite):
-
     """ represents the Player. """
 
     def __init__(self):
@@ -11,6 +10,7 @@ class Player(pygame.sprite.Sprite):
 
         self.image = PLAYER
         self.rect = self.image.get_rect()
+        self.speed = 4
 
     def draw(self, screen):
         """ draw player specifically """

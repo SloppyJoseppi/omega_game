@@ -1,5 +1,4 @@
 
-
 class Score:
     """ this class may or may not become how score is kept
         for now it is used to pass the high score back and
@@ -10,7 +9,7 @@ class Score:
         self.top_score = self.fetch_score()
 
 
-    def write_score(self, score):
+    def write_score(self):
         # open a text file replace current content w/ top_score
         # stick both of these in try/except blocks
         with open('TOP_SCORE.txt', 'w') as score_db:
@@ -28,4 +27,4 @@ class Score:
 
     def update_ts(self, score):
         self.top_score = score
-        self.write_score(self.top_score)
+        self.write_score()

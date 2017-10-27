@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 # Sprite Sheet Loader - hammythepig
 #
 # Edited by Peter Kennedy
