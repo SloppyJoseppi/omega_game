@@ -1,0 +1,15 @@
+TODO:
+-----
+create a game class ok example here https://github.com/justinmeister/pygame-animation-example/blob/master/animation_example.py actually a lot of good game examples on his GH
+
+Create more robust player class that takes a weapon and ship parameter
+
+get weapon and ship class created weapon should take ammo param and ship should take the weap
+
+create an 'entity' base class for all entities to share
+
+create a subclass of enemy for current enemy ships allowing for more robust enemies in the future
+
+create at least one boss and boss fight
+
+decide whether or not to go side scroller vs static vs top scroller

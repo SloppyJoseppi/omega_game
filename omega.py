@@ -11,6 +11,8 @@ from score import Score
 from wobble import Wobble_shot
 from asteroid import Asteroid
 
+# create a file for constant vars colors bgs etc
+# create a game class!!!
 
 # Set the height and width of the screen
 screen_width = 700
@@ -22,8 +24,10 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
+pygame.mixer.pre_init(frequency=22050, size=8, channels=2, buffer=4096)
 # init pygame
 pygame.init()
+pygame.mixer.music.load('assets/Omega.ogg')
 # by default hide mouse
 pygame.mouse.set_visible(False)
 pygame.display.set_caption('OMEGA!')
@@ -52,6 +56,7 @@ def message_display(text, color):
     time.sleep(3)
 
 
+# create a button class rather than this function
 def button(msg, x, y, width, height, colors, action=None):
     """ function to easily create functional buttons """
 
@@ -102,6 +107,8 @@ def start_loop():
 
 
 def game_loop():
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.play(-1, 0.0)
     background = Background(BACKGROUND, [0,0])
 
     pygame.mouse.set_visible(False)
@@ -131,6 +138,8 @@ def game_loop():
         enemy_list.add(enemy)
         all_sprites_list.add(enemy)
 
+    #create game class
+
     # create a player
     player = Player()
     all_sprites_list.add(player)
@@ -139,7 +148,6 @@ def game_loop():
     shots_fired = 0
     player.rect.y = 330
     ammo = int(num_of_enemies * 10)
-    multiplier = 1
     streak = 0
     misses = 0
 
@@ -161,10 +169,6 @@ def game_loop():
     asteroid_list.add(asteroid2)
     asteroid_list.add(asteroid3)
 
-    # a = Asteroid()
-
-
-
     # -------- Main Program Loop -----------
     game_over = False
     while not game_over:
@@ -181,6 +185,7 @@ def game_loop():
             # print(event)
 
             if event.type == pygame.QUIT:
+                pygame.mixer.music.stop()
                 game_over = True
                 pygame.quit()
                 quit()
@@ -210,9 +215,11 @@ def game_loop():
 
                 elif not can_fire:
                     print('you loose')
+                    pygame.mixer.music.fadeout(1000)
                     message_display('YOU LOOSE OUT OF AMMO!!!', WHITE)
 
                     game_over = True
+
 
         # --- Game logic
 
@@ -223,7 +230,9 @@ def game_loop():
             player, asteroid_list, False)
 
         if player_hit_list:
+            pygame.mixer.music.fadeout(1000)
             message_display('YOU LOOSE HIT BY ASTEROID!!!', WHITE)
+
             game_over = True
 
         # calculate mechanics for each bullet
@@ -233,6 +242,7 @@ def game_loop():
             enemy_hit_list = pygame.sprite.spritecollide(
                 bullet, enemy_list, False)
 
+            # see if asteroid hit ship
             asteroid_hit_list = pygame.sprite.spritecollide(
                 bullet, asteroid_list, False)
 
@@ -274,6 +284,7 @@ def game_loop():
             else:
                 message_display('YOU WIN!!! total score: {}'
                     .format(str(total_score)), WHITE)
+            pygame.mixer.music.fadeout(500)
             game_over = True
 
         # clear the screen
