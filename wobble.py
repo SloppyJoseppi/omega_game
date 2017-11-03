@@ -8,7 +8,6 @@ class Wobble_shot(Bullet, pygame.sprite.Sprite):
 
     def __init__(self, pos):
         super(Wobble_shot, self).__init__(pos)
-
         self.image = WOBBLE.convert_alpha()
         self.wobble = 'right'
         self.speed = 2
@@ -17,6 +16,9 @@ class Wobble_shot(Bullet, pygame.sprite.Sprite):
     # def explode(self):
 
     def grow_animation(self):
+        # get rid of magic numbers here!
+        # expansion_point = 250 or something
+        # maybe make self.expand_point and self.expand_cap
         if self.rect.y < 250:
             growth = 250 - self.rect.y
             cap = 30

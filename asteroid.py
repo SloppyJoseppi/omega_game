@@ -1,58 +1,62 @@
-import pygame
-import random
-from sprite_sheet_loader import sprite_sheet
+# import pygame
+# import random
+# from sprite_sheet_loader import sprite_sheet
 
-ASTEROID = 'assets/asteroid.png'
+# ASTEROID = 'assets/asteroid.png'
 
-class Asteroid(pygame.sprite.Sprite):
-    """ represents the asteroids """
+# class Asteroid(pygame.sprite.Sprite):
+#     """ represents the asteroids """
 
-    def __init__(self, size, hp, x, y, speed=2):
-        super().__init__()
+#     def __init__(self, size, hp, x, y, speed=2):
+#         super().__init__()
 
-        self.sheet = sprite_sheet((64,64), ASTEROID)
-        self.image =  self.sheet[0]
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.rect.height = size[0]
-        self.rect.width = size[1]
-        self.size = size
-        self.speed = speed
-        self.hp = hp
+#         self.sheet = sprite_sheet((64,64), ASTEROID)
+#         self.image =  self.sheet[0]
+#         self.rect_img = self.image.get_rect()
+#         self.rect = self.rect_img.copy()
+#         self.rect.x = x
+#         self.rect.y = y
+#         self.rect.height = size[0]
+#         self.rect.width = size[1]
+#         self.size = size
+#         self.speed = speed
+#         self.hp = hp
 
-    # def explode(self):
+#     def draw(self, screen):
 
-    def update(self):
-        """ update the player's position to the mouse x position """
+#         if self.hp < 5:
+#             self.image = self.sheet[6]
 
-        self.rect.y += self.speed
+#         elif self.hp < 10:
+#             self.image = self.sheet[5]
 
-        if self.rect.y > 460:
-            self.rect.y = -60
-            self.rect.x = random.randint(0, 680)
+#         elif self.hp < 12:
+#             self.image = self.sheet[4]
 
-        # current_ticks = pygame.time.get_ticks()
+#         elif self.hp < 14:
+#             self.image = self.sheet[3]
 
-        if self.hp <= 0:
-            self.kill()
+#         elif self.hp < 16:
+#             self.image = self.sheet[2]
 
-        elif self.hp < 5:
-            self.image = self.sheet[6]
+#         elif self.hp < 18:
+#             self.image = self.sheet[1]
 
-        elif self.hp < 10:
-            self.image = self.sheet[5]
-            self.rect.height = self.size[0]/2
-            self.rect.width = self.size[1]/2
+#         screen.blit(self.image, self.rect_img)
 
-        elif self.hp < 12:
-            self.image = self.sheet[4]
+#     def update(self):
+#         """ update the asteroids's position """
 
-        elif self.hp < 14:
-            self.image = self.sheet[3]
+#         self.rect_img.y += self.speed
 
-        elif self.hp < 16:
-            self.image = self.sheet[2]
+#         if self.rect_img.y > 460:
+#             self.rect_img.y = -60
+#             self.rect_img.x = random.randint(0, 680)
 
-        elif self.hp < 18:
-            self.image = self.sheet[1]
+#         self.rect.center = self.rect_img.center
+#         # current_ticks = pygame.time.get_ticks()
+
+#         if self.hp <= 0:
+#             self.kill()
+
+

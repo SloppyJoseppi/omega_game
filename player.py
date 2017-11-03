@@ -10,6 +10,7 @@ class Player(pygame.sprite.Sprite):
 
         self.image = PLAYER
         self.rect = self.image.get_rect()
+        self.rect.centerx = 10
         self.speed = 4
 
     def draw(self, screen):
