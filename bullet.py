@@ -7,7 +7,7 @@ class Bullet(pygame.sprite.Sprite):
 
     def __init__(self, pos):
         super().__init__()
-
+        self.sound = pygame.mixer.Sound('assets/sounds/ship_lazer.ogg')
         self.height = 10
         self.width = 4
         self.image = pygame.Surface([self.width, self.height])
@@ -16,6 +16,8 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.centerx = pos[0]
         self.rect.centery = pos[1]
         self.speed = 5
+
+        self.sound.play()
 
     def update(self):
         """ move the bullet """

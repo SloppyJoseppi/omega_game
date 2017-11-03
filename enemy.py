@@ -15,6 +15,7 @@ class Enemy(pygame.sprite.Sprite):
         self.time = None
         self.speed = random.randrange(1,4)
         self.direction = random.randrange(0,2)
+        self.destruction_sound = pygame.mixer.Sound('assets/sounds/enemy_hit.ogg')
         self.hit = False
         self.alive = True
 
@@ -22,6 +23,7 @@ class Enemy(pygame.sprite.Sprite):
         """ mark enemy as hit """
 
         self.hit = True
+        self.destruction_sound.play()
         self.time = pygame.time.get_ticks()
         self.image = DESTRO_ENEMY
 
