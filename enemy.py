@@ -13,8 +13,8 @@ class Enemy(pygame.sprite.Sprite):
         self.image = ENEMY
         self.rect = self.image.get_rect()
         self.time = None
-        self.speed = random.randrange(1,4)
-        self.direction = random.randrange(0,2)
+        self.speed = random.randrange(1, 4)
+        self.direction = random.randrange(0, 2)
         self.destruction_sound = pygame.mixer.Sound('assets/sounds/enemy_hit.ogg')
         self.hit = False
         self.alive = True

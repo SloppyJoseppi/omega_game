@@ -9,7 +9,7 @@ from bullet import Bullet
 from hud import Hud
 from score import Score
 from wobble import Wobble_shot
-# from asteroid import Asteroid
+from asteroid import Asteroid
 
 # create a file for constant vars colors bgs etc
 # create a game class!!!
@@ -29,15 +29,11 @@ pygame.mixer.pre_init(frequency=22050, size=8, channels=2, buffer=1024)
 pygame.init()
 pygame.mixer.music.load('assets/music/Omega.ogg')
 # by default hide mouse
-pygame.mouse.set_visible(False)
+# pygame.mouse.set_visible(False)
 pygame.display.set_caption('OMEGA!')
 clock = pygame.time.Clock()
 # global obj to track high scores
 scores = Score()
-
-sounds = {
-    'wobble_shot': pygame.mixer.Sound('assets/sounds/wobble.ogg')
-}
 
 # creates 'text objects' for displaying messages
 # handy functions from a tutorial needs re-write to better suit my needs
@@ -111,11 +107,13 @@ def start_loop():
 
 
 def game_loop():
+    #create game class!!!!!!!!!!
+
     pygame.mixer.music.set_volume(0.5)
     pygame.mixer.music.play(-1, 0.0)
     background = Background(BACKGROUND, [0,0])
 
-    pygame.mouse.set_visible(False)
+    # pygame.mouse.set_visible(False)
 
     #  list of every sprite
     all_sprites_list = pygame.sprite.Group()
@@ -127,7 +125,7 @@ def game_loop():
     asteroid_list = pygame.sprite.Group()
 
     # --- Create the sprites
-    num_of_enemies = 20
+    num_of_enemies = 15
 
     # create all enemies
     for i in range(num_of_enemies):
@@ -142,8 +140,6 @@ def game_loop():
         enemy_list.add(enemy)
         all_sprites_list.add(enemy)
 
-    #create game class
-
     # create a player
     player = Player()
     all_sprites_list.add(player)
@@ -151,7 +147,7 @@ def game_loop():
     score = 0
     shots_fired = 0
     player.rect.y = 330
-    ammo = int(num_of_enemies * 100)
+    ammo = int(num_of_enemies * 10)
     streak = 0
     misses = 0
 
@@ -163,21 +159,22 @@ def game_loop():
     hud_items.add(hud_score)
     hud_items.add(hud_ammo)
 
-    # asteroid = Asteroid((60, 60), 20, 350, -40, 4)
-    # asteroid2 = Asteroid((50, 50), 35, 250, -40)
-    # asteroid3 = Asteroid((50, 50), 35, 100, -40, 1)
-    # all_sprites_list.add(asteroid)
+    asteroid = Asteroid((60, 60), 20, 30, 0, 2)
+    asteroid2 = Asteroid((60, 60), 20, 300, 0, 3)
+    asteroid3 = Asteroid((60, 60), 20, 100, 0, 1)
+    asteroid4 = Asteroid((60, 60), 20, 600, 0, 3)
     # all_sprites_list.add(asteroid2)
     # all_sprites_list.add(asteroid3)
-    # asteroid_list.add(asteroid)
-    # asteroid_list.add(asteroid2)
-    # asteroid_list.add(asteroid3)
+    asteroid_list.add(asteroid)
+    asteroid_list.add(asteroid2)
+    asteroid_list.add(asteroid3)
+    asteroid_list.add(asteroid4)
 
     # -------- Main Program Loop -----------
     game_over = False
     while not game_over:
-        multiplier = int(streak/2) or 1
-        total_score = score * 100 or 0
+        multiplier = streak/2 or 0.5
+        total_score = int(score * 100) or 0
         hud_ammo.prop = ammo
         hud_score.prop = total_score
         hud_multiplier.prop = multiplier
@@ -228,6 +225,7 @@ def game_loop():
 
         # call the update method on all the sprites
         all_sprites_list.update()
+        asteroid_list.update()
 
         player_hit_list = pygame.sprite.spritecollide(
             player, asteroid_list, False)
@@ -251,6 +249,8 @@ def game_loop():
 
             for asteroid in asteroid_hit_list:
                 asteroid.hp -= 3
+                if asteroid.hp <= 0:
+                    streak *= 2
                 bullet_list.remove(bullet)
                 all_sprites_list.remove(bullet)
 
@@ -299,7 +299,9 @@ def game_loop():
         hud_ammo.print_prop(screen)
         hud_score.print_prop(screen)
         hud_multiplier.print_prop(screen)
-        # asteroid.draw(screen)
+
+        for astrd in asteroid_list:
+            astrd.draw(screen)
         # followed by enemies
         all_sprites_list.draw(screen)
         # and finally player on top

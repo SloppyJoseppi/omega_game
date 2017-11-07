@@ -11,6 +11,7 @@ class Player(pygame.sprite.Sprite):
         self.image = PLAYER
         self.rect = self.image.get_rect()
         self.rect.centerx = 10
+        self.rect.x = 350
         self.speed = 4
 
     def draw(self, screen):
@@ -23,4 +24,11 @@ class Player(pygame.sprite.Sprite):
 
         pos = pygame.mouse.get_pos()
 
-        self.rect.x = pos[0]
+        if self.rect.centerx + 5 == 0 or self.rect.x - 5 == 0:
+            self.rect.centerx = pos[0]
+        elif self.rect.centerx > pos[0] + 5:
+            self.rect.x -= self.speed
+        elif self.rect.centerx < pos[0] - 5:
+            self.rect.x += self.speed
+
+
