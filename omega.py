@@ -9,7 +9,7 @@ from bullet import Bullet
 from hud import Hud
 from score import Score
 from wobble import Wobble_shot
-from asteroid import Asteroid
+from asteroid import Asteroid, Asteroid_group
 
 # create a file for constant vars colors bgs etc
 # create a game class!!!
@@ -122,7 +122,7 @@ def game_loop():
     # list of each bullet - rename projectile?
     bullet_list = pygame.sprite.Group()
 
-    asteroid_list = pygame.sprite.Group()
+    asteroid_list = Asteroid_group()
 
     # --- Create the sprites
     num_of_enemies = 15
@@ -148,7 +148,7 @@ def game_loop():
     shots_fired = 0
     player.rect.y = 330
     ammo = int(num_of_enemies * 10)
-    streak = 0
+    streak = 1
     misses = 0
 
     hud_items = pygame.sprite.Group()
@@ -159,10 +159,10 @@ def game_loop():
     hud_items.add(hud_score)
     hud_items.add(hud_ammo)
 
-    asteroid = Asteroid((60, 60), 20, 30, 0, 2)
-    asteroid2 = Asteroid((60, 60), 20, 300, 0, 3)
-    asteroid3 = Asteroid((60, 60), 20, 100, 0, 1)
-    asteroid4 = Asteroid((60, 60), 20, 600, 0, 3)
+    asteroid = Asteroid((60, 60), 20)
+    asteroid2 = Asteroid((60, 60), 20)
+    asteroid3 = Asteroid((60, 60), 20)
+    asteroid4 = Asteroid((60, 60), 20)
     # all_sprites_list.add(asteroid2)
     # all_sprites_list.add(asteroid3)
     asteroid_list.add(asteroid)
@@ -173,7 +173,7 @@ def game_loop():
     # -------- Main Program Loop -----------
     game_over = False
     while not game_over:
-        multiplier = streak/2 or 0.5
+        multiplier = int(streak/2) or 1
         total_score = int(score * 100) or 0
         hud_ammo.prop = ammo
         hud_score.prop = total_score
@@ -250,7 +250,7 @@ def game_loop():
             for asteroid in asteroid_hit_list:
                 asteroid.hp -= 3
                 if asteroid.hp <= 0:
-                    streak *= 2
+                    score += 20
                 bullet_list.remove(bullet)
                 all_sprites_list.remove(bullet)
 
@@ -300,8 +300,8 @@ def game_loop():
         hud_score.print_prop(screen)
         hud_multiplier.print_prop(screen)
 
-        for astrd in asteroid_list:
-            astrd.draw(screen)
+        asteroid_list.draw(screen)
+
         # followed by enemies
         all_sprites_list.draw(screen)
         # and finally player on top
