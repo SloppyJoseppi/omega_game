@@ -27,12 +27,11 @@ class Asteroid(pygame.sprite.Sprite):
 
         self.sheet = sprite_sheet((64,64), ASTEROID)
         self.image =  self.sheet[0]
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect_img = self.image.get_rect()
         self.rect_img.x = x_starting_pos
         self.rect_img.y = y_starting_pos
         self.rect = self.rect_img.copy()
-        self.rect.height = size[0] / 2
-        self.rect.width = size[1] / 2
         self.size = size
         self.speed = random.randrange(1, 6)
         self.hp = hp
@@ -58,8 +57,10 @@ class Asteroid(pygame.sprite.Sprite):
         elif self.hp < 18:
             self.image = self.sheet[1]
 
+        self.mask = pygame.mask.from_surface(self.image)
+
         if self.hp > 0:
-          screen.blit(self.image, self.rect_img)
+            screen.blit(self.image, self.rect_img)
 
     def update(self):
         """ update the asteroids's position """

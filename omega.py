@@ -112,6 +112,7 @@ def game_loop():
     pygame.mixer.music.set_volume(0.5)
     pygame.mixer.music.play(-1, 0.0)
     background = Background(BACKGROUND, [0,0])
+    fps = 60
 
     # pygame.mouse.set_visible(False)
 
@@ -134,15 +135,14 @@ def game_loop():
         # set a random location for the enemy
         # *maybe* in the future have them all start off screen
         enemy.rect.x = random.randrange(screen_width)
-        enemy.rect.y = random.randrange(300)
-
+        enemy.rect.y = random.randrange(240)
+        enemy.starting_y = enemy.rect.y
         # Add the enemy to the appropriate lists of sprites
         enemy_list.add(enemy)
         all_sprites_list.add(enemy)
 
     # create a player
     player = Player()
-    all_sprites_list.add(player)
 
     score = 0
     shots_fired = 0
@@ -159,7 +159,7 @@ def game_loop():
     hud_items.add(hud_score)
     hud_items.add(hud_ammo)
 
-    asteroid = Asteroid((60, 60), 20)
+    asteroid = Asteroid((40, 40), 20)
     asteroid2 = Asteroid((60, 60), 20)
     asteroid3 = Asteroid((60, 60), 20)
     asteroid4 = Asteroid((60, 60), 20)
@@ -181,7 +181,7 @@ def game_loop():
 
         # --- Event Processing
         for event in pygame.event.get():
-            player_pos = (player.rect.x + 30, player.rect.y + 10)
+            player_pos = player.rect.center
 
             # print(event)
 
@@ -224,11 +224,13 @@ def game_loop():
         # --- Game logic
 
         # call the update method on all the sprites
+        player.update()
         all_sprites_list.update()
         asteroid_list.update()
 
+        # --- handle collisions
         player_hit_list = pygame.sprite.spritecollide(
-            player, asteroid_list, False)
+            player, asteroid_list, False, pygame.sprite.collide_mask)
 
         if player_hit_list:
             pygame.mixer.music.fadeout(1000)
@@ -236,7 +238,18 @@ def game_loop():
 
             game_over = True
 
-        # calculate mechanics for each bullet
+        player_enemy_hit_list = pygame.sprite.spritecollide(
+            player, enemy_list, False, pygame.sprite.collide_mask)
+
+        if player_enemy_hit_list:
+            for enemy in player_enemy_hit_list:
+                if not enemy.hit:
+                    pygame.mixer.music.fadeout(1000)
+                    message_display('YOU LOOSE HIT BY ENEMY!!!', WHITE)
+
+                    game_over = True
+
+        # --- calculate mechanics for each bullet
         for bullet in bullet_list:
 
             # see if bullet hit a enemy
@@ -246,6 +259,7 @@ def game_loop():
             # see if asteroid hit ship
             asteroid_hit_list = pygame.sprite.spritecollide(
                 bullet, asteroid_list, False)
+
 
             for asteroid in asteroid_hit_list:
                 asteroid.hp -= 3
@@ -271,7 +285,8 @@ def game_loop():
                 streak = 0
                 misses += 1
 
-        # checking enemy list is empty ensures that the last explode() has completed ;)
+        # checking enemy list is empty ensures that the last explode() has completed
+        # before ending game;)
         if not enemy_list:
             print('winner',shots_fired, score, total_score)
             pygame.mixer.music.fadeout(1000)
@@ -310,7 +325,7 @@ def game_loop():
         # update the screen
         pygame.display.flip()
 
-        clock.tick(60)
+        clock.tick(fps)
 
 if __name__ == '__main__':
     start_loop()

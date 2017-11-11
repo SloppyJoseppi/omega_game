@@ -13,8 +13,7 @@ class Bullet(pygame.sprite.Sprite):
         self.image = pygame.Surface([self.width, self.height])
         self.image.fill(LAZER)
         self.rect = self.image.get_rect()
-        self.rect.centerx = pos[0]
-        self.rect.centery = pos[1]
+        self.rect.center = pos
         self.speed = 5
 
         self.sound.play()
