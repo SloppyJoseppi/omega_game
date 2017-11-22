@@ -20,7 +20,7 @@ class Enemy(pygame.sprite.Sprite):
         self.hit = False
         self.attacking = False
         self.alive = True
-        self.attack_timing = random.randrange(200, 750)
+        self.attack_timing = random.randrange(300, 850)
         self.timer = 0
         self.timer_active = False
         self.starting_y = self.rect.y
@@ -82,7 +82,6 @@ class Enemy(pygame.sprite.Sprite):
         if self.timer >= self.attack_timing:
             self.attack()
             self.reset_timer()
-        print(self.timer)
         self.swoop_animation()
 
         if self.time and self.hit:
