@@ -1,4 +1,3 @@
-
 import pygame
 import random
 import time
@@ -12,28 +11,14 @@ from wobble import Wobble_shot
 from asteroid import Asteroid, Asteroid_group
 
 # create a file for constant vars colors bgs etc
-# create a game class!!!
+# ~create a game class!!!~
 
-# Set the height and width of the screen
-screen_width = 700
-screen_height = 400
-screen = pygame.display.set_mode([screen_width, screen_height])
 BACKGROUND = 'assets/background.png'
 START_BG = 'assets/start_bg.png'
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
-pygame.mixer.pre_init(frequency=22050, size=8, channels=2, buffer=1024)
-# init pygame
-pygame.init()
-pygame.mixer.music.load('assets/music/Omega.ogg')
-# by default hide mouse
-# pygame.mouse.set_visible(False)
-pygame.display.set_caption('OMEGA!')
-clock = pygame.time.Clock()
-# global obj to track high scores
-scores = Score()
 
 # creates 'text objects' for displaying messages
 # handy functions from a tutorial needs re-write to better suit my needs
@@ -47,7 +32,7 @@ def message_display(text, color):
     large_text = pygame.font.Font('freesansbold.ttf',30)
     # create text 'objects'
     text_surf, text_rect = text_objects(text, large_text, color)
-    text_rect.center = ((screen_width/2),(screen_height/2))
+    text_rect.center = ((self.screen_width/2),(self.screen_height/2))
     # blit the text object to the screen
     screen.blit(text_surf, text_rect)
     # update the screen to show new text
@@ -80,255 +65,279 @@ def button(msg, x, y, width, height, colors, action=None):
     pygame.display.update()
 
 
-def start_loop():
-    selected = False
-    background = Background(START_BG, [0, 0])
-    top_score = Hud(10, 350, 200, 40, "TOP SCORE")
-
-    while not selected:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                selected = True
-
-        top_score.prop = scores.top_score
-        clock.tick(20)
-        pygame.mouse.set_visible(True)
-        screen.blit(background.image, background.rect)
-
-        large_text = pygame.font.Font('freesansbold.ttf',80)
-        text_surf, text_rect = text_objects("OMEGA!", large_text, (210,208,224))
-        text_rect.center = ((screen_width/2),(screen_height/2.75))
-        screen.blit(text_surf, text_rect)
-
-        top_score.print_prop(screen)
-
-        button('PLAY', ((screen_width/2) - 50), 240, 100, 40,
-              ((37,31,71), (108,100,153), (210,208,224)), game_loop)
+class Game(object):
+    """Controls entire game"""
+    def __init__(self):
+        self.screen = self.pygame_setup()
+        self.clock = pygame.time.Clock()
+        # global obj to track high scores
+        self.scores = Score()
+        
 
 
-def game_loop():
-    #create game class!!!!!!!!!!
+    def pygame_setup():
+        """Initializes pygame and produces a surface to blit on"""
+        # Set the height and width of the screen
+        self.screen_width = 700
+        self.screen_height = 400
+        screen = pygame.display.set_mode([self.screen_width, self.screen_height])
+        pygame.mixer.pre_init(frequency=22050, size=8, channels=2, buffer=1024)
+        # init pygame
+        pygame.init()
+        pygame.mixer.music.load('assets/music/Omega.ogg')
+        # by default hide mouse
+        # pygame.mouse.set_visible(False) uncomment to hide mouse
+        pygame.display.set_caption('OMEGA!')
 
-    pygame.mixer.music.set_volume(0.5)
-    pygame.mixer.music.play(-1, 0.0)
-    background = Background(BACKGROUND, [0,0])
-    fps = 60
+        return screen
 
-    # pygame.mouse.set_visible(False)
+    def start_loop():
+        selected = False
+        background = Background(START_BG, [0, 0])
+        top_score = Hud(10, 350, 200, 40, "TOP SCORE")
 
-    #  list of every sprite
-    all_sprites_list = pygame.sprite.Group()
-    # list of each enemy in the game
-    enemy_list = pygame.sprite.Group()
-    # list of each bullet - rename projectile?
-    bullet_list = pygame.sprite.Group()
+        while not selected:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    selected = True
 
-    asteroid_list = Asteroid_group()
+            top_score.prop = scores.top_score
+            self.clock.tick(20)
+            pygame.mouse.set_visible(True)
+            self.screen.blit(background.image, background.rect)
 
-    # --- Create the sprites
-    num_of_enemies = 15
+            large_text = pygame.font.Font('freesansbold.ttf',80)
+            text_surf, text_rect = text_objects("OMEGA!", large_text, (210,208,224))
+            text_rect.center = ((self.screen_width/2),(self.screen_height/2.75))
+            self.screen.blit(text_surf, text_rect)
 
-    # create all enemies
-    for i in range(num_of_enemies):
-        enemy = Enemy()
+            top_score.print_prop(self.screen)
 
-        # set a random location for the enemy
-        # *maybe* in the future have them all start off screen
-        enemy.rect.x = random.randrange(screen_width)
-        enemy.rect.y = random.randrange(240)
-        enemy.starting_y = enemy.rect.y
-        # Add the enemy to the appropriate lists of sprites
-        enemy_list.add(enemy)
-        all_sprites_list.add(enemy)
+            button('PLAY', ((self.screen_width/2) - 50), 240, 100, 40,
+                  ((37,31,71), (108,100,153), (210,208,224)), self.game_loop)
 
-    # create a player
-    player = Player()
 
-    score = 0
-    shots_fired = 0
-    player.rect.y = 330
-    ammo = int(num_of_enemies * 10)
-    streak = 1
-    misses = 0
+    def game_loop():
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(-1, 0.0)
+        background = Background(BACKGROUND, [0,0])
+        fps = 60
 
-    hud_items = pygame.sprite.Group()
+        # pygame.mouse.set_visible(False)
 
-    hud_score = Hud(570, 350, 120, 40, 'SCORE')
-    hud_ammo = Hud(570, 300, 120, 40, 'AMMO')
-    hud_multiplier = Hud(510, 350, 50, 40, '', 'x', True)
-    hud_items.add(hud_score)
-    hud_items.add(hud_ammo)
+        #  list of every sprite
+        all_sprites_list = pygame.sprite.Group()
+        # list of each enemy in the game
+        enemy_list = pygame.sprite.Group()
+        # list of each bullet - rename projectile?
+        bullet_list = pygame.sprite.Group()
 
-    asteroid = Asteroid((40, 40), 20)
-    asteroid2 = Asteroid((60, 60), 20)
-    asteroid3 = Asteroid((60, 60), 20)
-    asteroid4 = Asteroid((60, 60), 20)
-    # all_sprites_list.add(asteroid2)
-    # all_sprites_list.add(asteroid3)
-    asteroid_list.add(asteroid)
-    asteroid_list.add(asteroid2)
-    asteroid_list.add(asteroid3)
-    asteroid_list.add(asteroid4)
+        asteroid_list = Asteroid_group()
 
-    # -------- Main Program Loop -----------
-    game_over = False
-    while not game_over:
-        multiplier = int(streak/2) or 1
-        total_score = int(score * 100) or 0
-        hud_ammo.prop = ammo
-        hud_score.prop = total_score
-        hud_multiplier.prop = multiplier
+        # --- Create the sprites
+        num_of_enemies = 15
 
-        # --- Event Processing
-        for event in pygame.event.get():
-            player_pos = player.rect.center
+        # create all enemies
+        for i in range(num_of_enemies):
+            enemy = Enemy()
 
-            # print(event)
+            # set a random location for the enemy
+            # *maybe* in the future have them all start off screen
+            enemy.rect.x = random.randrange(self.screen_width)
+            enemy.rect.y = random.randrange(240)
+            enemy.starting_y = enemy.rect.y
+            # Add the enemy to the appropriate lists of sprites
+            enemy_list.add(enemy)
+            all_sprites_list.add(enemy)
 
-            if event.type == pygame.QUIT:
-                pygame.mixer.music.stop()
+        # create a player
+        player = Player()
+
+        score = 0
+        shots_fired = 0
+        player.rect.y = 330
+        ammo = int(num_of_enemies * 10)
+        streak = 1
+        misses = 0
+
+        hud_items = pygame.sprite.Group()
+
+        hud_score = Hud(570, 350, 120, 40, 'SCORE')
+        hud_ammo = Hud(570, 300, 120, 40, 'AMMO')
+        hud_multiplier = Hud(510, 350, 50, 40, '', 'x', True)
+        hud_items.add(hud_score)
+        hud_items.add(hud_ammo)
+
+        asteroid = Asteroid((40, 40), 20)
+        asteroid2 = Asteroid((60, 60), 20)
+        asteroid3 = Asteroid((60, 60), 20)
+        # all_sprites_list.add(asteroid2)
+        # all_sprites_list.add(asteroid3)
+        asteroid_list.add(asteroid)
+        asteroid_list.add(asteroid2)
+        asteroid_list.add(asteroid3)
+
+        # -------- Main Program Loop -----------
+        game_over = False
+        while not game_over:
+            multiplier = int(streak/2) or 1
+            total_score = int(score * 100) or 0
+            hud_ammo.prop = ammo
+            hud_score.prop = total_score
+            hud_multiplier.prop = multiplier
+
+            # --- Event Processing
+            for event in pygame.event.get():
+                player_pos = player.rect.center
+
+                # print(event)
+
+                if event.type == pygame.QUIT:
+                    pygame.mixer.music.stop()
+                    game_over = True
+                    pygame.quit()
+                    quit()
+
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    can_fire = ammo > 0
+
+                    if can_fire and event.button == 1:
+                        bullet = Bullet(player_pos)
+                        # add the bullet to lists
+                        all_sprites_list.add(bullet)
+                        bullet_list.add(bullet)
+                        shots_fired += 1
+                        ammo -= 1
+
+                    elif can_fire and event.button == 3:
+                        bullet = Wobble_shot(player_pos)
+                        # add the bullet to lists
+                        all_sprites_list.add(bullet)
+                        bullet_list.add(bullet)
+                        shots_fired += 1
+                        ammo -= 1
+
+                    elif event.button == 2:
+                        ammo += 30
+
+                    elif not can_fire:
+                        print('you loose')
+                        pygame.mixer.music.fadeout(1000)
+                        message_display('YOU LOOSE OUT OF AMMO!!!', WHITE)
+
+                        game_over = True
+
+
+            # --- Game logic
+
+            # call the update method on all the sprites
+            player.update()
+            all_sprites_list.update()
+            asteroid_list.update()
+
+            # --- handle collisions
+            player_hit_list = pygame.sprite.spritecollide(
+                player, asteroid_list, False, pygame.sprite.collide_mask)
+
+            if player_hit_list:
+                pygame.mixer.music.fadeout(1000)
+                message_display('YOU LOOSE HIT BY ASTEROID!!!', WHITE)
+
                 game_over = True
-                pygame.quit()
-                quit()
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                can_fire = ammo > 0
+            player_enemy_hit_list = pygame.sprite.spritecollide(
+                player, enemy_list, False, pygame.sprite.collide_mask)
 
-                if can_fire and event.button == 1:
-                    bullet = Bullet(player_pos)
-                    # add the bullet to lists
-                    all_sprites_list.add(bullet)
-                    bullet_list.add(bullet)
-                    shots_fired += 1
-                    ammo -= 1
+            if player_enemy_hit_list:
+                for enemy in player_enemy_hit_list:
+                    if not enemy.hit:
+                        pygame.mixer.music.fadeout(1000)
+                        message_display('YOU LOOSE HIT BY ENEMY!!!', WHITE)
 
-                elif can_fire and event.button == 3:
-                    bullet = Wobble_shot(player_pos)
-                    # add the bullet to lists
-                    all_sprites_list.add(bullet)
-                    bullet_list.add(bullet)
-                    shots_fired += 1
-                    ammo -= 1
+                        game_over = True
 
-                elif event.button == 2:
-                    ammo += 30
+            # --- calculate mechanics for each bullet
+            for bullet in bullet_list:
 
-                elif not can_fire:
-                    print('you loose')
-                    pygame.mixer.music.fadeout(1000)
-                    message_display('YOU LOOSE OUT OF AMMO!!!', WHITE)
+                # see if bullet hit a enemy
+                enemy_hit_list = pygame.sprite.spritecollide(
+                    bullet, enemy_list, False)
 
-                    game_over = True
+                # see if asteroid hit ship
+                asteroid_hit_list = pygame.sprite.spritecollide(
+                    bullet, asteroid_list, False)
 
 
-        # --- Game logic
-
-        # call the update method on all the sprites
-        player.update()
-        all_sprites_list.update()
-        asteroid_list.update()
-
-        # --- handle collisions
-        player_hit_list = pygame.sprite.spritecollide(
-            player, asteroid_list, False, pygame.sprite.collide_mask)
-
-        if player_hit_list:
-            pygame.mixer.music.fadeout(1000)
-            message_display('YOU LOOSE HIT BY ASTEROID!!!', WHITE)
-
-            game_over = True
-
-        player_enemy_hit_list = pygame.sprite.spritecollide(
-            player, enemy_list, False, pygame.sprite.collide_mask)
-
-        if player_enemy_hit_list:
-            for enemy in player_enemy_hit_list:
-                if not enemy.hit:
-                    pygame.mixer.music.fadeout(1000)
-                    message_display('YOU LOOSE HIT BY ENEMY!!!', WHITE)
-
-                    game_over = True
-
-        # --- calculate mechanics for each bullet
-        for bullet in bullet_list:
-
-            # see if bullet hit a enemy
-            enemy_hit_list = pygame.sprite.spritecollide(
-                bullet, enemy_list, False)
-
-            # see if asteroid hit ship
-            asteroid_hit_list = pygame.sprite.spritecollide(
-                bullet, asteroid_list, False)
-
-
-            for asteroid in asteroid_hit_list:
-                asteroid.hp -= 3
-                if asteroid.hp <= 0:
-                    score += 20
-                bullet_list.remove(bullet)
-                all_sprites_list.remove(bullet)
-
-            # for each enemy hit, remove the bullet and add to the score
-            for enemy in enemy_hit_list:
-
-                if not enemy.hit:
+                for asteroid in asteroid_hit_list:
+                    asteroid.hp -= 3
+                    if asteroid.hp <= 0:
+                        score += 20
                     bullet_list.remove(bullet)
                     all_sprites_list.remove(bullet)
-                    score += (1 * multiplier)
-                    streak += 1
-                    enemy.explode()
 
-             # remove the bullet if it flies up off the screen
-            if bullet.rect.y < -10:
-                bullet_list.remove(bullet)
-                all_sprites_list.remove(bullet)
-                streak = 0
-                misses += 1
+                # for each enemy hit, remove the bullet and add to the score
+                for enemy in enemy_hit_list:
 
-        # checking enemy list is empty ensures that the last explode() has completed
-        # before ending game;)
-        if not enemy_list:
-            print('winner',shots_fired, score, total_score)
-            pygame.mixer.music.fadeout(1000)
-            if total_score > scores.top_score:
-                scores.update_ts(total_score)
+                    if not enemy.hit:
+                        bullet_list.remove(bullet)
+                        all_sprites_list.remove(bullet)
+                        score += (1 * multiplier)
+                        streak += 1
+                        enemy.explode()
 
-            if shots_fired <= num_of_enemies and not misses:
-                message_display('PERFECT!! YOU WIN!! score: {}'
-                    .format(str(total_score)), WHITE)
-            elif ammo == 0:
-                message_display('CLOSE ONE, YOU WIN!! score: {}'
-                    .format(str(total_score)), WHITE)
-            else:
-                message_display('YOU WIN!!! total score: {}'
-                    .format(str(total_score)), WHITE)
-            game_over = True
+                 # remove the bullet if it flies up off the screen
+                if bullet.rect.y < -10:
+                    bullet_list.remove(bullet)
+                    all_sprites_list.remove(bullet)
+                    streak = 0
+                    misses += 1
 
-        # clear the screen
-        screen.fill(WHITE)
-        # then background
-        screen.blit(background.image, background.rect)
+            # checking enemy list is empty ensures that the last explode() has completed
+            # before ending game;)
+            if not enemy_list:
+                print('winner',shots_fired, score, total_score)
+                pygame.mixer.music.fadeout(1000)
+                if total_score > scores.top_score:
+                    scores.update_ts(total_score)
 
-        # draw all the spites
-        # draw hud items on top of background
-        hud_ammo.print_prop(screen)
-        hud_score.print_prop(screen)
-        hud_multiplier.print_prop(screen)
+                if shots_fired <= num_of_enemies and not misses:
+                    message_display('PERFECT!! YOU WIN!! score: {}'
+                        .format(str(total_score)), WHITE)
+                elif ammo == 0:
+                    message_display('CLOSE ONE, YOU WIN!! score: {}'
+                        .format(str(total_score)), WHITE)
+                else:
+                    message_display('YOU WIN!!! total score: {}'
+                        .format(str(total_score)), WHITE)
+                game_over = True
 
-        asteroid_list.draw(screen)
+            # clear the screen
+            self.screen.fill(WHITE)
+            # then background
+            self.screen.blit(background.image, background.rect)
 
-        # followed by enemies
-        all_sprites_list.draw(screen)
-        # and finally player on top
-        player.draw(screen)
+            # draw all the spites
+            # draw hud items on top of background
+            hud_ammo.print_prop(self.screen)
+            hud_score.print_prop(self.screen)
+            hud_multiplier.print_prop(self.screen)
 
-        # update the screen
-        pygame.display.flip()
+            asteroid_list.draw(self.screen)
 
-        clock.tick(fps)
+            # followed by enemies
+            all_sprites_list.draw(self.screen)
+            # and finally player on top
+            player.draw(self.screen)
+
+            # update the screen
+            pygame.display.flip()
+
+            self.clock.tick(fps)
+
 
 if __name__ == '__main__':
-    start_loop()
+    game = Game()
+    game.start_loop()
 
 pygame.quit()
 quit()
