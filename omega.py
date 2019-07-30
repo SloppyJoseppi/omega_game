@@ -20,21 +20,22 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 
-# creates 'text objects' for displaying messages
+# 
 # handy functions from a tutorial needs re-write to better suit my needs
 def text_objects(text, font, color):
+    """Creates 'text objects' for displaying messages"""
     text_surf = font.render(text, True, color)
     return text_surf, text_surf.get_rect()
 
 # uses text objects to display messages on screen
 # same here, ok for now...
-def message_display(text, color):
+def message_display(text, color, surface, screenDimentions):
     large_text = pygame.font.Font('freesansbold.ttf',30)
     # create text 'objects'
     text_surf, text_rect = text_objects(text, large_text, color)
-    text_rect.center = ((self.screen_width/2),(self.screen_height/2))
+    text_rect.center = ((screenDimentions[0]/2), (screenDimentions[1]/2))
     # blit the text object to the screen
-    screen.blit(text_surf, text_rect)
+    surface.blit(text_surf, text_rect)
     # update the screen to show new text
     pygame.display.update()
     # pause for a moment to allow player to see message
@@ -42,25 +43,24 @@ def message_display(text, color):
 
 
 # create a button class rather than this function
-def button(msg, x, y, width, height, colors, action=None):
+def button(msg, x, y, width, height, colors, surface, action=None):
     """ function to easily create functional buttons """
 
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
 
     if x + width > mouse[0] > x and y + height > mouse[1] > y:
-        pygame.draw.rect(screen, colors[0], (x, y, width, height))
+        pygame.draw.rect(surface, colors[0], (x, y, width, height))
         if click[0] == 1 and action != None:
             action()
-
     else:
-        pygame.draw.rect(screen, colors[1], (x, y, width, height))
+        pygame.draw.rect(surface, colors[1], (x, y, width, height))
 
     small_text = pygame.font.Font('freesansbold.ttf',20)
     text_surf, text_rect = text_objects(msg, small_text, colors[2])
     text_rect.center = ((x + (width/2)),(y + (height / 2)))
 
-    screen.blit(text_surf, text_rect)
+    surface.blit(text_surf, text_rect)
 
     pygame.display.update()
 
@@ -74,13 +74,12 @@ class Game(object):
         self.scores = Score()
         
 
-
-    def pygame_setup():
+    def pygame_setup(self):
         """Initializes pygame and produces a surface to blit on"""
-        # Set the height and width of the screen
         self.screen_width = 700
         self.screen_height = 400
         screen = pygame.display.set_mode([self.screen_width, self.screen_height])
+        # pre init mixer
         pygame.mixer.pre_init(frequency=22050, size=8, channels=2, buffer=1024)
         # init pygame
         pygame.init()
@@ -91,7 +90,9 @@ class Game(object):
 
         return screen
 
-    def start_loop():
+
+    def start_loop(self):
+        """Loop for start screen"""
         selected = False
         background = Background(START_BG, [0, 0])
         top_score = Hud(10, 350, 200, 40, "TOP SCORE")
@@ -101,7 +102,7 @@ class Game(object):
                 if event.type == pygame.QUIT:
                     selected = True
 
-            top_score.prop = scores.top_score
+            top_score.prop = self.scores.top_score
             self.clock.tick(20)
             pygame.mouse.set_visible(True)
             self.screen.blit(background.image, background.rect)
@@ -114,16 +115,21 @@ class Game(object):
             top_score.print_prop(self.screen)
 
             button('PLAY', ((self.screen_width/2) - 50), 240, 100, 40,
-                  ((37,31,71), (108,100,153), (210,208,224)), self.game_loop)
+                  ((37,31,71), (108,100,153), (210,208,224)), self.screen, self.game_loop)
 
 
-    def game_loop():
+    def game_loop(self):
+        """All gameplay setup and logic"""
+        # start the game music 
         pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.play(-1, 0.0)
+        # set the background
         background = Background(BACKGROUND, [0,0])
+        # set desired fps
         fps = 60
 
-        # pygame.mouse.set_visible(False)
+        # uncomment this line to hide the system mouse when game window is in focus
+        # pygame.mouse.set_visible(False) 
 
         #  list of every sprite
         all_sprites_list = pygame.sprite.Group()
@@ -186,10 +192,11 @@ class Game(object):
             hud_score.prop = total_score
             hud_multiplier.prop = multiplier
 
-            # --- Event Processing
+            # --- Event Processing --- Controls 
             for event in pygame.event.get():
                 player_pos = player.rect.center
 
+                # uncomment this to see event in the terminal
                 # print(event)
 
                 if event.type == pygame.QUIT:
@@ -223,7 +230,7 @@ class Game(object):
                     elif not can_fire:
                         print('you loose')
                         pygame.mixer.music.fadeout(1000)
-                        message_display('YOU LOOSE OUT OF AMMO!!!', WHITE)
+                        message_display('YOU LOOSE OUT OF AMMO!!!', WHITE, self.screen, (self.screen_width, self.screen_height))
 
                         game_over = True
 
@@ -241,7 +248,7 @@ class Game(object):
 
             if player_hit_list:
                 pygame.mixer.music.fadeout(1000)
-                message_display('YOU LOOSE HIT BY ASTEROID!!!', WHITE)
+                message_display('YOU LOOSE HIT BY ASTEROID!!!', WHITE, self.screen, (self.screen_width, self.screen_height))
 
                 game_over = True
 
@@ -252,7 +259,7 @@ class Game(object):
                 for enemy in player_enemy_hit_list:
                     if not enemy.hit:
                         pygame.mixer.music.fadeout(1000)
-                        message_display('YOU LOOSE HIT BY ENEMY!!!', WHITE)
+                        message_display('YOU LOOSE HIT BY ENEMY!!!', WHITE, self.screen, (self.screen_width, self.screen_height))
 
                         game_over = True
 
@@ -297,18 +304,18 @@ class Game(object):
             if not enemy_list:
                 print('winner',shots_fired, score, total_score)
                 pygame.mixer.music.fadeout(1000)
-                if total_score > scores.top_score:
-                    scores.update_ts(total_score)
+                if total_score > self.scores.top_score:
+                    self.scores.update_ts(total_score)
 
                 if shots_fired <= num_of_enemies and not misses:
                     message_display('PERFECT!! YOU WIN!! score: {}'
-                        .format(str(total_score)), WHITE)
+                        .format(str(total_score)), WHITE, self.screen, (self.screen_width, self.screen_height))
                 elif ammo == 0:
                     message_display('CLOSE ONE, YOU WIN!! score: {}'
-                        .format(str(total_score)), WHITE)
+                        .format(str(total_score)), WHITE, self.screen, (self.screen_width, self.screen_height))
                 else:
                     message_display('YOU WIN!!! total score: {}'
-                        .format(str(total_score)), WHITE)
+                        .format(str(total_score)), WHITE, self.screen, (self.screen_width, self.screen_height))
                 game_over = True
 
             # clear the screen
