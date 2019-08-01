@@ -27,17 +27,18 @@ class Hud(pygame.sprite.Sprite):
         self.delimiter = delimiter
 
     # should probably fix this to work with update now
-    def print_prop(self, dest=None):
+    def update(self, dest=None):
         """ Update the hud info """
 
         font = pygame.font.Font('freesansbold.ttf',15)
+        self.image = self.HUD_ITEM.convert_alpha()
         self.text = font.render('{}{} {}'
             .format(self.label, self.delimiter, self.prop), True, (0, 0, 0))
         self.text_rect = self.text.get_rect()
         self.text_rect.center = ((self.text_rect.x + (self.width/2),
                                 (self.text_rect.y + (self.height/2))))
+        
+        self.image.blit(self.text, self.text_rect)
 
         if dest:
-            self.image = self.HUD_ITEM.convert_alpha()
-            self.image.blit(self.text, self.text_rect)
             dest.blit(self.image, self.rect)
