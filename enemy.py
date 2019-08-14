@@ -25,6 +25,7 @@ class Enemy(pygame.sprite.Sprite):
         self.timer_active = False
         self.starting_y = self.rect.y
 
+
     def explode(self):
         """ mark enemy as hit """
 

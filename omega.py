@@ -9,6 +9,7 @@ from hud import Hud
 from score import Score
 from wobble import Wobble_shot
 from asteroid import Asteroid, Asteroid_group
+from powerup import PowerUp
 
 # create a file for constant vars colors bgs etc
 
@@ -65,13 +66,15 @@ def button(msg, x, y, width, height, colors, surface, action=None):
 
 
 class Game(object):
+
     """Controls entire game"""
     def __init__(self):
         self.screen = self.pygame_setup()
         self.clock = pygame.time.Clock()
         # global obj to track high scores
         self.scores = Score()
-        
+
+
 
     def pygame_setup(self):
         """Initializes pygame and produces a surface to blit on"""
@@ -138,6 +141,10 @@ class Game(object):
         streak = 1
         misses = 0
 
+        powershot = False
+
+
+
         # uncomment this line to hide the system mouse when game window is in focus
         # pygame.mouse.set_visible(False) 
 
@@ -147,6 +154,8 @@ class Game(object):
         enemy_list = pygame.sprite.Group()
         # list of each bullet - rename projectile?
         bullet_list = pygame.sprite.Group()
+        # list of power ups
+        power_up_list = pygame.sprite.Group()
 
         # --- Create the sprites
         # create all enemies
@@ -185,8 +194,21 @@ class Game(object):
         asteroid_list.add(asteroid2)
         asteroid_list.add(asteroid3)
 
+
+
+
         # -------- Main Program Loop -----------
+
+        start_ticks = pygame.time.get_ticks()
+
+
         game_over = False
+
+
+
+
+
+
         while not game_over:
             multiplier = int(streak/2) or 1
             total_score = int(score * 100) or 0
@@ -208,9 +230,13 @@ class Game(object):
                     quit()
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
+
                     can_fire = ammo > 0
 
-                    if can_fire and event.button == 1:
+
+
+
+                    if can_fire and event.button == 1 and powershot is False:
                         bullet = Bullet(player_pos)
                         # add the bullet to lists
                         all_sprites_list.add(bullet)
@@ -218,13 +244,23 @@ class Game(object):
                         shots_fired += 1
                         ammo -= 1
 
-                    elif can_fire and event.button == 3:
+
+
+                    if powershot is True and event.button == 1:
                         bullet = Wobble_shot(player_pos)
                         # add the bullet to lists
                         all_sprites_list.add(bullet)
                         bullet_list.add(bullet)
                         shots_fired += 1
                         ammo -= 1
+
+                        if powershot is True:
+                            seconds = (pygame.time.get_ticks() - start_ticks) / 1000
+                            if seconds > 4:
+                                powershot = False
+
+
+
 
                     elif event.button == 2:
                         ammo += 30
@@ -244,6 +280,7 @@ class Game(object):
             all_sprites_list.update()
             asteroid_list.update()
             hud_items.update()
+            power_up_list.update()
 
             # --- handle collisions
             player_hit_list = pygame.sprite.spritecollide(
@@ -266,6 +303,23 @@ class Game(object):
 
                         game_over = True
 
+
+
+
+
+            power_hit_list = pygame.sprite.spritecollide(player, power_up_list, True)
+
+            for powerup in power_hit_list:
+
+                start_ticks = pygame.time.get_ticks()
+
+                powershot = True
+
+
+
+
+
+
             # --- calculate mechanics for each bullet
             for bullet in bullet_list:
 
@@ -282,18 +336,30 @@ class Game(object):
                     asteroid.hp -= 3
                     if asteroid.hp <= 0:
                         score += 20
-                    bullet_list.remove(bullet)
-                    all_sprites_list.remove(bullet)
+                        bullet_list.remove(bullet)
+                        all_sprites_list.remove(bullet)
 
                 # for each enemy hit, remove the bullet and add to the score
                 for enemy in enemy_hit_list:
 
                     if not enemy.hit:
+
                         bullet_list.remove(bullet)
                         all_sprites_list.remove(bullet)
                         score += (1 * multiplier)
                         streak += 1
                         enemy.explode()
+                        percentage = random.randint(1, 100)
+                        if (percentage >= 1) and (percentage < 25):
+                            powerup = PowerUp(enemy.rect.center)
+
+                            all_sprites_list.add(powerup)
+                            power_up_list.add(powerup)
+
+
+
+
+                            #PowerUp(enemy.rect.center).add(all_sprites_list, power_up_list)
 
                  # remove the bullet if it flies up off the screen
                 if bullet.rect.y < -10:
@@ -301,6 +367,12 @@ class Game(object):
                     all_sprites_list.remove(bullet)
                     streak = 0
                     misses += 1
+
+
+
+
+
+
 
             # checking enemy list is empty ensures that the last explode() has completed
             # before ending game;)
